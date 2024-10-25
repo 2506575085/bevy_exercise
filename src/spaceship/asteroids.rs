@@ -84,6 +84,7 @@ fn handle_asteroid_collisions(
                 continue;
             }
             commands.entity(entity).despawn_recursive();
+            break;
         }
     }
 }

@@ -1,3 +1,4 @@
+use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
 
 #[derive(States, Clone, Copy, Default, Eq, PartialEq, Hash, Debug)]
@@ -12,84 +13,67 @@ pub enum RunningState {
 #[derive(Event)]
 pub struct ResetEvent;
 
-#[derive(Resource)]
-struct LongPressTimer(Timer);
-
 pub struct RunningStatePlugin;
 impl Plugin for RunningStatePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(LongPressTimer(Timer::from_seconds(2.5, TimerMode::Repeating)));
         app.init_state::<RunningState>().enable_state_scoped_entities::<RunningState>();
         app.add_event::<ResetEvent>();
         app.add_systems(Update, handle_reset_operation);
-        app.add_systems(PostUpdate, handle_running_state_change);
-        app.add_systems(OnEnter(RunningState::Paused), spawn_status_texts);
-        app.add_systems(OnEnter(RunningState::Resetting), spawn_status_texts);
-        app.add_systems(OnEnter(RunningState::End), spawn_status_texts);
+        app.add_systems(Update, switch_running_and_paused.run_if(input_just_pressed(KeyCode::Escape)));
+        app.add_systems(OnEnter(RunningState::Paused), spawn_status_text("Paused", RunningState::Paused));
+        app.add_systems(OnEnter(RunningState::Resetting), spawn_status_text("Resetting...", RunningState::Resetting));
+        app.add_systems(OnEnter(RunningState::End), spawn_status_text("End", RunningState::End));
     }
 }
 
-fn handle_running_state_change(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    running_state: Res<State<RunningState>>,
-    mut next_state: ResMut<NextState<RunningState>>
-) {
-    if keyboard_input.just_pressed(KeyCode::Escape) {
-        match running_state.get() {
-            RunningState::Running => next_state.set(RunningState::Paused),
-            RunningState::Paused => next_state.set(RunningState::Running),
-            _ => ()
-        }
-    }
+fn switch_running_and_paused(state: Res<State<RunningState>>, mut next_state: ResMut<NextState<RunningState>>) {
+    match state.get() {
+        RunningState::Running => next_state.set(RunningState::Paused),
+        RunningState::Paused => next_state.set(RunningState::Running),
+        _ => ()
+    };
 }
 
+#[derive(Default)]
+struct LongPressTimer(f32);
 fn handle_reset_operation(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
+    mut long_press_timer: Local<LongPressTimer>,
     mut reset_event_writer: EventWriter<ResetEvent>,
-    mut timer: ResMut<LongPressTimer>,
+    state: Res<State<RunningState>>,
     mut next_state: ResMut<NextState<RunningState>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::KeyR) {
-        timer.0.reset();
+        long_press_timer.0 = 0.0;
         next_state.set(RunningState::Resetting);
     }
     if keyboard_input.just_released(KeyCode::KeyR) {
-        timer.0.reset();
+        long_press_timer.0 = 0.0;
         next_state.set(RunningState::Running);
     }
     if keyboard_input.pressed(KeyCode::KeyR) {
-        let time_tick = timer.0.tick(time.delta());
-        if time_tick.just_finished() {
+        if *state.get() != RunningState::Resetting { return; }
+        long_press_timer.0 += time.delta_seconds();
+        if long_press_timer.0 >= 2.0 {
+            long_press_timer.0 = 0.0;
             reset_event_writer.send(ResetEvent);
             next_state.set(RunningState::Running);
         }
     }
 }
 
-fn spawn_status_texts(mut commands: Commands, state: Res<State<RunningState>>) {
-    let (paused_text_bundle, paused_node_bundle) = get_status_texts_bundles(state.get());
-    let text_entity = commands.spawn(paused_text_bundle).id();
-    commands.spawn(paused_node_bundle).add_child(text_entity);
-}
-
-fn get_status_texts_bundles(running_state: &RunningState) -> (TextBundle, (NodeBundle, StateScoped<RunningState>)) {
-    let text = match running_state {
-        RunningState::Paused => "Paused",
-        RunningState::Resetting => "Resetting",
-        RunningState::End => "End",
-        _ => ""
-    };
-    (
-        TextBundle::from_section(
-        text,
-        TextStyle {
+fn spawn_status_text(text: &'static str, running_state: RunningState) -> impl FnMut(Commands) {
+    move |mut commands| {
+        let text_bundle= TextBundle::from_section(
+            text,
+            TextStyle {
                 font_size: 180.,
                 color: Color::WHITE,
                 ..default()
             }
-        ),
-        (
+        );
+        let node_bundle = (
             NodeBundle {
                 style: Style {
                     justify_content: JustifyContent::Center,
@@ -100,7 +84,9 @@ fn get_status_texts_bundles(running_state: &RunningState) -> (TextBundle, (NodeB
                 },
                 ..default()
             },
-            StateScoped(*running_state),
-        )
-    )
+            StateScoped(running_state),
+        );
+        let text_entity = commands.spawn(text_bundle).id();
+        commands.spawn(node_bundle).add_child(text_entity);
+    }
 }
