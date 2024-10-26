@@ -36,7 +36,7 @@ fn spawn_spaceship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
                 transform: Transform::from_translation(STARTING_TRANSLATION),
                 ..default()
             },
-            cllider: Collider::new(5.0)
+            collider: Collider::new(5.0)
         },
         Spaceship,
     ));
@@ -96,7 +96,7 @@ fn spaceship_weapon_controls(
                     },
                     ..default()
                 },
-                cllider: Collider::new(1.0)
+                collider: Collider::new(1.0)
             },
             SpaceshipMissile
         ));

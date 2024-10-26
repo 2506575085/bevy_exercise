@@ -17,7 +17,7 @@ mod collision_detection;
 
 pub struct GravitySystemPlugin;
 impl Plugin for GravitySystemPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
+    fn build(&self, app: &mut App) {
         app
             .configure_sets(
                 FixedUpdate,

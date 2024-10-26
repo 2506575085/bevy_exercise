@@ -15,7 +15,7 @@ pub struct GravitationPlugin;
 impl Plugin for GravitationPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(FixedUpdate,
-            (acceleration_update).chain().in_set(GravityStatusUpdateSet::AccelerationUpdate));
+            acceleration_update.chain().in_set(GravityStatusUpdateSet::AccelerationUpdate));
     }
 }
 
@@ -27,8 +27,8 @@ fn acceleration_update(
         let mut acclerations = Vec::new();
         for (other_entity ,other_transform, other_gravitation, _) in query.iter() {
             if entity == other_entity { continue; }
-            let distanse = transform.translation().distance(other_transform.translation());
-            let acceleration = 6.67 * 10.0_f32.powi(-11) * other_gravitation.mass / distanse.powi(2);
+            let distance = transform.translation().distance(other_transform.translation());
+            let acceleration = 6.67 * 10.0_f32.powi(-11) * other_gravitation.mass / distance.powi(2);
             let dir = (other_transform.translation() - transform.translation()).normalize();
             acclerations.push(dir*acceleration);
         }

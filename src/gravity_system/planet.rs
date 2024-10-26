@@ -61,7 +61,7 @@ impl Plugin for PlanetPlugin {
         app.add_systems(Update,
             (clear_planets, spawn_planets).chain().run_if(on_event::<ResetEvent>()));
         app.add_systems(FixedUpdate,
-            (handle_planet_collision).chain()
+            handle_planet_collision.chain()
                         .after(GravityStatusUpdateSet::CollisionDetection)
                         .run_if(on_event::<CollisionDetectionEvent>()));
     }
@@ -129,9 +129,9 @@ fn spawn_planets(mut commands: Commands, asset_model: Res<SceneAssets>) {
 
 fn clear_planets(
     mut commands: Commands,
-    plannets: Query<Entity, Or<(With<SmallPlanet>, With<FixedStar>)>>
+    planets: Query<Entity, Or<(With<SmallPlanet>, With<FixedStar>)>>
 ) {
-    for entity in plannets.iter() {
+    for entity in planets.iter() {
         commands.entity(entity).despawn_recursive();
     }
 }

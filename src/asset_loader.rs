@@ -22,7 +22,7 @@ fn load_assets(
     asset_server: Res<AssetServer>,
 ) {
     *scene_assets = SceneAssets {
-        asteroids: asset_server.load("models/Planet.glb#Scene0"),
+        asteroids: asset_server.load(GltfAssetLabel::Scene(0).from_asset("models/Planet.glb")),
         spaceship: asset_server.load("models/Spaceship.glb#Scene0"),
         missile: asset_server.load("models/Spaceship-u105mYHLHU.glb#Scene0"),
         planet: asset_server.load("models/Planet-1.glb#Scene0"),

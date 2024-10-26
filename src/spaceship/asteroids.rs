@@ -59,7 +59,7 @@ fn spawn_asteroids(
                 transform: Transform::from_translation(transition),
                 ..default()
             },
-            cllider: Collider::new(2.5)
+            collider: Collider::new(2.5)
         },
         Asteroid,
     ));

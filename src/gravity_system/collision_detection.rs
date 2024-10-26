@@ -17,7 +17,7 @@ pub struct CollisionDetectionPlugin;
 impl Plugin for CollisionDetectionPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<CollisionDetectionEvent>();
-        app.add_systems(FixedUpdate, (collision_detection_system).chain().in_set(GravityStatusUpdateSet::CollisionDetection));
+        app.add_systems(FixedUpdate, collision_detection_system.chain().in_set(GravityStatusUpdateSet::CollisionDetection));
     }
 }
 

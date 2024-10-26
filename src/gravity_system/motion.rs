@@ -26,9 +26,9 @@ impl Plugin for MotionPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(FixedUpdate,
-                (velocity_update).chain().in_set(GravityStatusUpdateSet::VelocityUpdate))
+                velocity_update.chain().in_set(GravityStatusUpdateSet::VelocityUpdate))
             .add_systems(FixedUpdate,
-                (position_update).chain().in_set(GravityStatusUpdateSet::PositionUpdate));
+                position_update.chain().in_set(GravityStatusUpdateSet::PositionUpdate));
     }
 }
 

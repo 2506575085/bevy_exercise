@@ -5,21 +5,28 @@ pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_camera)
-            .add_systems(Update, handle_camera_move_opration)
-            .add_systems(PostUpdate, handle_camera_zoom_opration);
+        app.add_systems(Startup, spawn_camera);
+        // app.add_systems(Update, handle_camera_move_operation);
+        // app.add_systems(PostUpdate, handle_camera_zoom_operation);
     }
 }
 
+#[derive(Component)]
+struct GravitySystemCamera;
+
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, CAMERA_DISTANCE, 0.0).looking_at(Vec3::ZERO, Vec3::Z),
-        ..default()
-    });
+    commands.spawn((
+        Camera3dBundle {
+            transform: Transform::from_xyz(0.0, CAMERA_DISTANCE, 0.0).looking_at(Vec3::ZERO, Vec3::Z),
+            ..default()
+        },
+        bevy_blendy_cameras::OrbitCameraController::default(),
+        GravitySystemCamera,
+    ));
 }
 
-fn handle_camera_move_opration(
-    mut query: Query<&mut Transform, With<Camera3d>>,
+fn handle_camera_move_operation(
+    mut query: Query<&mut Transform, With<GravitySystemCamera>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>
 ) {
@@ -35,8 +42,8 @@ fn handle_camera_move_opration(
     }
 }
 
-fn handle_camera_zoom_opration(
-    mut query: Query<&mut Transform, With<Camera3d>>,
+fn handle_camera_zoom_operation(
+    mut query: Query<&mut Transform, With<GravitySystemCamera>>,
     mut wheel_reader: EventReader<MouseWheel>
 ) {
     for event in wheel_reader.read() {
