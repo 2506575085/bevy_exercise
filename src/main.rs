@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
 use asset_loader::AssetLoaderPlugin;
-// use spaceship::SpaceshipSystemPlugin;
-use gravity_system::GravitySystemPlugin;
+
 
 mod spaceship;
 mod asset_loader;
 mod gravity_system;
+mod wave_function_collapse;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins) // DefaultPlugins需要放在前面，否则会panic
@@ -18,8 +18,9 @@ fn main() {
         })
         // .add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::default())
         .add_plugins(AssetLoaderPlugin)
-        .add_plugins(GravitySystemPlugin)
-        // .add_plugins(SpaceshipSystemPlugin)
+        // .add_plugins(gravity_system::GravitySystemPlugin)
+        // .add_plugins(spaceship::SpaceshipSystemPlugin)
+        .add_plugins(wave_function_collapse::WaveFunctionCollapsePlugin)
         .run();
 }
 
